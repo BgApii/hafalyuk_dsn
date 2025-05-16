@@ -1,10 +1,10 @@
-// pages/setoran_detail_page.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hafalyuk_dsn/models/setoran_model.dart';
 import 'package:hafalyuk_dsn/services/auth_service.dart';
 import 'package:hafalyuk_dsn/services/pa_service.dart';
 import 'package:dio/dio.dart';
+import 'package:hafalyuk_dsn/pages/login_page.dart';
 
 class SetoranDetailPage extends StatefulWidget {
   final String nim;
@@ -29,7 +29,30 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
     _fetchSetoranData();
   }
 
+  Future<void> _checkTokenAndNavigate() async {
+    final token = await _authService.getToken();
+    if (token == null) {
+      await _authService.logout();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Sesi Anda telah berakhir. Silakan login kembali.'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+        );
+      }
+      return;
+    }
+  }
+
   Future<void> _fetchSetoranData() async {
+    await _checkTokenAndNavigate();
+    if (!mounted) return;
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -37,19 +60,26 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
 
     try {
       final response = await _paService.getSetoranData(widget.nim);
-      setState(() {
-        _setoranResponse = response;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _setoranResponse = response;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+      }
     }
   }
 
   Future<void> _toggleSetoranStatus(Detail detail, int index) async {
+    await _checkTokenAndNavigate();
+    if (!mounted) return;
+
     setState(() {
       _isLoading = true;
     });
@@ -74,13 +104,15 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
       // Refresh data after update
       await _fetchSetoranData();
     } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
     }
   }
 
