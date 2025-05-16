@@ -133,7 +133,7 @@ class AuthService {
   void _scheduleTokenRefresh(int expiresIn) {
     getRefreshToken();
     _cancelRefreshTimer();
-    final refreshDuration = Duration(seconds: expiresIn - 810);
+    final refreshDuration = Duration(seconds: expiresIn - 120);
     _refreshTimer = Timer(refreshDuration, () async {
       try {
         await _refreshToken();
@@ -154,7 +154,7 @@ class AuthService {
     }
     _isResettingInactivityTimer = true;
     _cancelInactivityTimer();
-    final inactivityTimeout = Duration(minutes: 1);
+    final inactivityTimeout = Duration(minutes: 10);
     _inactivityTimer = Timer(inactivityTimeout, () async {
       await logout();
     });
