@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.hafalyuk_dsn"
+    namespace = "com.aaw.hafalanmhs_for_dosen"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.hafalyuk_dsn"
+        applicationId = "com.aaw.hafalanmhs_for_dosen"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

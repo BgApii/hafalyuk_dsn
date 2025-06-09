@@ -27,6 +27,10 @@ class AuthService {
           _resetInactivityTimer();
           return handler.next(options);
         },
+        onResponse: (Response response, ResponseInterceptorHandler handler) {
+          _resetInactivityTimer();
+          return handler.next(response);
+        },
         onError: (DioException e, ErrorInterceptorHandler handler) async {
           if (e.response?.statusCode == 401) {
             try {
