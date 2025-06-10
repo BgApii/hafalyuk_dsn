@@ -42,7 +42,7 @@ class _MahasiswaPageState extends State<MahasiswaPage> {
   void initState() {
     super.initState();
     _searchFocusNode.addListener(() {
-      setState(() {}); // Rebuild to update border color when focus changes
+      setState(() {});
     });
   }
 
@@ -59,7 +59,7 @@ class _MahasiswaPageState extends State<MahasiswaPage> {
 
     return GestureDetector(
       onTap: () {
-        _searchFocusNode.unfocus(); // Unfocus TextField when tapping outside
+        _searchFocusNode.unfocus();
       },
       child: Scaffold(
         body: Container(
@@ -94,7 +94,7 @@ class _MahasiswaPageState extends State<MahasiswaPage> {
                       borderSide: BorderSide(
                         color:
                             _searchFocusNode.hasFocus
-                                ? Color(0xFF98C1A9) // Sage green when focused
+                                ? Color(0xFF98C1A9)
                                 : Color(0xFF4A4A4A),
                       ),
                     ),
@@ -103,14 +103,14 @@ class _MahasiswaPageState extends State<MahasiswaPage> {
                       borderSide: BorderSide(
                         color:
                             _searchFocusNode.hasFocus
-                                ? Color(0xFF98C1A9) // Sage green when focused
+                                ? Color(0xFF98C1A9)
                                 : Color(0xFF4A4A4A),
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
-                        color: Color(0xFF98C1A9), // Sage green when focused
+                        color: Color(0xFF98C1A9),
                         width: 2,
                       ),
                     ),
@@ -221,10 +221,10 @@ class _MahasiswaPageState extends State<MahasiswaPage> {
                                                 const begin = Offset(
                                                   1.0,
                                                   0.0,
-                                                ); // Start from right
+                                                );
                                                 const end =
                                                     Offset
-                                                        .zero; // End at center
+                                                        .zero;
                                                 const curve = Curves.easeInOut;
 
                                                 var tween = Tween(

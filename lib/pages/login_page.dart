@@ -29,8 +29,8 @@ class _LoginPageState extends State<LoginPage> {
           pageBuilder:
               (context, animation, secondaryAnimation) => const PaPage(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(1.0, 0.0); // Start from right
-            const end = Offset.zero; // End at center
+            const begin = Offset(1.0, 0.0);
+            const end = Offset.zero;
             const curve = Curves.easeInOut;
 
             var tween = Tween(

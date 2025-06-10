@@ -5,10 +5,12 @@ import 'package:hafalyuk_dsn/services/auth_service.dart';
 import 'package:hafalyuk_dsn/services/pa_service.dart';
 import 'package:dio/dio.dart';
 import 'package:hafalyuk_dsn/pages/login_page.dart';
-import 'package:hafalyuk_dsn/widgets/info_item_widget.dart';
-import 'package:percent_indicator/linear_percent_indicator.dart';
+import 'package:hafalyuk_dsn/widgets/detail_bottom_sheet.dart';
+import 'package:hafalyuk_dsn/widgets/toggle_confirmation_dialog.dart';
+import 'package:hafalyuk_dsn/widgets/student_info_bottom_sheet.dart';
+import 'package:hafalyuk_dsn/widgets/progress_bottom_sheet.dart';
+import 'package:hafalyuk_dsn/widgets/progress_card.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:intl/intl.dart';
 
 class SetoranDetailPage extends StatefulWidget {
   final String nim;
@@ -25,112 +27,14 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
   SetoranRespons? _setoranResponse;
   bool _isLoading = true;
   String? _errorMessage;
-  final CarouselSliderController _carouselController =
-      CarouselSliderController();
+  final CarouselSliderController _carouselController = CarouselSliderController();
   int _currentPage = 0;
   String _selectedFilter = 'Semua';
   final List<String> _filters = ['Semua', 'Sudah Setor', 'Belum Setor'];
 
-  // State variables for multi-select
   bool _isMultiSelectMode = false;
-  String? _multiSelectType; // 'validate' or 'cancel'
+  String? _multiSelectType;
   Set<int> _selectedIndices = {};
-
-  String formatPercentage(double? value) {
-    if (value == null) return '0%';
-    if (value == value.roundToDouble()) {
-      return '${value.toInt()}%';
-    } else {
-      return '${value.toStringAsFixed(1)}%';
-    }
-  }
-
-  String _formatDate(String? dateStr) {
-    if (dateStr == null) return '-';
-    try {
-      final date = DateTime.parse(dateStr);
-      const List<String> monthNames = [
-        'Januari',
-        'Februari',
-        'Maret',
-        'April',
-        'Mei',
-        'Juni',
-        'Juli',
-        'Agustus',
-        'September',
-        'Oktober',
-        'November',
-        'Desember',
-      ];
-      return '${date.day} ${monthNames[date.month - 1]} ${date.year}';
-    } catch (e) {
-      return dateStr;
-    }
-  }
-
-  void _showDetailBottomSheet(Detail detail) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-      ),
-      builder:
-          (context) => Container(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                Row(
-                  children: [
-                    Icon(
-                      detail.sudahSetor == true
-                          ? Icons.check_circle
-                          : Icons.pending,
-                      color:
-                          detail.sudahSetor == true ? Colors.green : Colors.red,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        detail.nama ?? '-',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF4A4A4A),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  detail.sudahSetor == true
-                      ? 'Sudah menyetor surah ${detail.nama ?? '-'} pada tanggal ${_formatDate(detail.infoSetoran?.tglSetoran)} dan divalidasi oleh ${detail.infoSetoran?.dosenYangMengesahkan?.nama ?? '-'}.'
-                      : 'Belum menyetor surah ${detail.nama ?? '-'}.',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    color: Colors.black.withOpacity(0.7),
-                  ),
-                ),
-              ],
-            ),
-          ),
-    );
-  }
 
   @override
   void initState() {
@@ -187,75 +91,6 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
         });
       }
     }
-  }
-
-  void _showToggleConfirmationDialog(
-    Detail detail,
-    int index,
-    bool isValidate,
-  ) {
-    final String title =
-        isValidate ? 'Konfirmasi Validasi' : 'Konfirmasi Pembatalan';
-    final String content =
-        isValidate
-            ? 'Apakah Anda yakin ingin memvalidasi setoran ${detail.nama ?? '-'}?'
-            : 'Apakah Anda yakin ingin membatalkan setoran ${detail.nama ?? '-'}?';
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          backgroundColor: const Color(0xFFFFFFFF),
-          title: Text(
-            title,
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF4A4A4A),
-            ),
-          ),
-          content: Text(
-            content,
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: const Color(0xFF888888),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Tutup dialog
-              },
-              child: Text(
-                'Batal',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: const Color(0xFF888888),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.of(context).pop(); // Tutup dialog
-                await _performToggleSetoranStatus(detail, index);
-              },
-              child: Text(
-                'Ya',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: const Color(0xFF4A4A4A),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   Future<void> _performToggleSetoranStatus(Detail detail, int index) async {
@@ -320,7 +155,6 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
         if (_selectedIndices.contains(index)) {
           _selectedIndices.remove(index);
         } else {
-          // Only allow selection based on multi-select type
           if (_multiSelectType == 'validate' && detail.sudahSetor != true ||
               _multiSelectType == 'cancel' && detail.sudahSetor == true) {
             _selectedIndices.add(index);
@@ -330,72 +164,13 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
       return;
     }
 
-    // Show confirmation dialog for single item action
-    _showToggleConfirmationDialog(detail, index, detail.sudahSetor != true);
-  }
-
-  void _showSaveConfirmationDialog() {
-    final String title =
-        _multiSelectType == 'validate'
-            ? 'Konfirmasi Validasi'
-            : 'Konfirmasi Pembatalan';
-    final String content =
-        _multiSelectType == 'validate'
-            ? 'Apakah Anda yakin ingin memvalidasi setoran tersebut?'
-            : 'Apakah Anda yakin ingin membatalkan setoran tersebut?';
-
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          backgroundColor: const Color(0xFFFFFFFF),
-          title: Text(
-            title,
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF4A4A4A),
-            ),
-          ),
-          content: Text(
-            content,
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: const Color(0xFF888888),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Tutup dialog
-              },
-              child: Text(
-                'Batal',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: const Color(0xFF888888),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.of(context).pop(); // Tutup dialog
-                await _performSaveMultiSelectChanges();
-              },
-              child: Text(
-                'Ya',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: const Color(0xFF4A4A4A),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
+        return ToggleConfirmationDialog(
+          detail: detail,
+          isValidate: detail.sudahSetor != true,
+          onConfirm: () => _performToggleSetoranStatus(detail, index),
         );
       },
     );
@@ -475,203 +250,15 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
       );
       return;
     }
-    _showSaveConfirmationDialog();
-  }
-
-  void _showStudentInfoBottomSheet() {
-    final info = _setoranResponse?.data?.info;
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-      ),
-      builder:
-          (context) => Container(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                InfoItem(
-                  icon: Icons.person,
-                  label: 'Nama',
-                  value: info?.nama ?? '-',
-                ),
-                InfoItem(
-                  icon: Icons.badge,
-                  label: 'NIM',
-                  value: info?.nim ?? '-',
-                ),
-                InfoItem(
-                  icon: Icons.calendar_today,
-                  label: 'Semester',
-                  value: '${info?.semester ?? '-'}',
-                ),
-              ],
-            ),
-          ),
-    );
-  }
-
-  void _showProgressBottomSheet(int ringkasanIndex, String title) {
-    final setoran = _setoranResponse?.data?.setoran;
-    if (setoran == null ||
-        setoran.ringkasan == null ||
-        ringkasanIndex >= setoran.ringkasan!.length) {
-      return;
-    }
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-      ),
-      builder:
-          (context) => Container(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                Text(
-                  title,
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF4A4A4A),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                LinearPercentIndicator(
-                  animation: true,
-                  animationDuration: 1200,
-                  lineHeight: 20.0,
-                  percent:
-                      (setoran.ringkasan![ringkasanIndex].persentaseProgresSetor
-                              ?.toDouble() ??
-                          0.0) /
-                      100,
-                  center: Text(
-                    formatPercentage(
-                      setoran.ringkasan![ringkasanIndex].persentaseProgresSetor,
-                    ),
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      color: Colors.black,
-                    ),
-                  ),
-                  progressColor: const Color(0xFFC2E9D7),
-                  backgroundColor: const Color(0xFFD9D9D9),
-                  barRadius: const Radius.circular(10),
-                ),
-                const SizedBox(height: 16),
-                InfoItem(
-                  icon: Icons.check_circle,
-                  label: 'Total Sudah Setor',
-                  value:
-                      '${setoran.ringkasan![ringkasanIndex].totalSudahSetor ?? 0.0}',
-                ),
-                InfoItem(
-                  icon: Icons.pending,
-                  label: 'Total Belum Setor',
-                  value:
-                      '${setoran.ringkasan![ringkasanIndex].totalBelumSetor ?? 0.0}',
-                ),
-              ],
-            ),
-          ),
-    );
-  }
-
-  Widget _buildProgressCard(int ringkasanIndex, String title) {
-    final setoran = _setoranResponse?.data?.setoran;
-    if (setoran == null ||
-        setoran.ringkasan == null ||
-        ringkasanIndex >= setoran.ringkasan!.length) {
-      return const SizedBox.shrink();
-    }
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14.0),
-      child: Card(
-        color: const Color(0xFFFFFFFF),
-        elevation: 1,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(20),
-          onTap: () => _showProgressBottomSheet(ringkasanIndex, title),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              vertical: 16.0,
-              horizontal: 8.0,
-            ),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        title,
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF4A4A4A),
-                        ),
-                      ),
-                      const Icon(Icons.info),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                LinearPercentIndicator(
-                  animation: true,
-                  animationDuration: 1200,
-                  lineHeight: 20.0,
-                  percent:
-                      (setoran.ringkasan![ringkasanIndex].persentaseProgresSetor
-                              ?.toDouble() ??
-                          0.0) /
-                      100,
-                  center: Text(
-                    formatPercentage(
-                      setoran.ringkasan![ringkasanIndex].persentaseProgresSetor,
-                    ),
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      color: Colors.black,
-                    ),
-                  ),
-                  progressColor: const Color(0xFFC2E9D7),
-                  backgroundColor: const Color(0xFFD9D9D9),
-                  barRadius: const Radius.circular(10),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+      builder: (BuildContext context) {
+        return ToggleConfirmationDialog(
+          detail: Detail(nama: 'terpilih'),
+          isValidate: _multiSelectType == 'validate',
+          onConfirm: _performSaveMultiSelectChanges,
+        );
+      },
     );
   }
 
@@ -711,7 +298,13 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
             ),
           ),
           onPressed: () {
-            _showStudentInfoBottomSheet();
+            showModalBottomSheet(
+              context: context,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+              ),
+              builder: (context) => StudentInfoBottomSheet(info: _setoranResponse?.data?.info),
+            );
           },
         ),
         centerTitle: true,
@@ -727,59 +320,55 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
               });
             },
             color: Colors.white,
-            itemBuilder:
-                (BuildContext context) => [
-                  PopupMenuItem(
-                    value: 'validate',
-                    child: Row(
-                      children: [
-                        Checkbox(
-                          value: _multiSelectType == 'validate',
-                          onChanged: (_) {},
-                          activeColor: const Color(0xFF4A4A4A),
-                        ),
-                        const Text('Pilih Banyak Validasi'),
-                      ],
+            itemBuilder: (BuildContext context) => [
+              PopupMenuItem(
+                value: 'validate',
+                child: Row(
+                  children: [
+                    Checkbox(
+                      value: _multiSelectType == 'validate',
+                      onChanged: (_) {},
+                      activeColor: const Color(0xFF4A4A4A),
                     ),
-                  ),
-                  PopupMenuItem(
-                    value: 'cancel',
-                    child: Row(
-                      children: [
-                        Checkbox(
-                          value: _multiSelectType == 'cancel',
-                          onChanged: (_) {},
-                          activeColor: const Color(0xFF4A4A4A),
-                        ),
-                        const Text('Pilih Banyak Batalkan'),
-                      ],
+                    const Text('Pilih Banyak Validasi'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'cancel',
+                child: Row(
+                  children: [
+                    Checkbox(
+                      value: _multiSelectType == 'cancel',
+                      onChanged: (_) {},
+                      activeColor: const Color(0xFF4A4A4A),
                     ),
-                  ),
-                ],
+                    const Text('Pilih Banyak Batalkan'),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
-      floatingActionButton:
-          _isMultiSelectMode
-              ? FloatingActionButton(
-                onPressed: _saveMultiSelectChanges,
-                backgroundColor:
-                    _multiSelectType == 'validate' ? Colors.green : Colors.red,
-                child: const Icon(Icons.save, color: Colors.white),
-              )
-              : null,
+      floatingActionButton: _isMultiSelectMode
+          ? FloatingActionButton(
+              onPressed: _saveMultiSelectChanges,
+              backgroundColor: _multiSelectType == 'validate' ? Colors.green : Colors.red,
+              child: const Icon(Icons.save, color: Colors.white),
+            )
+          : null,
       body: Container(
         decoration: const BoxDecoration(
           borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
           color: Color(0xFFFFF8E7),
         ),
         height: double.infinity,
-        child:
-            _isLoading
-                ? const Center(
-                  child: CircularProgressIndicator(color: Color(0xFFC2E9D7)),
-                )
-                : _errorMessage != null
+        child: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(color: Color(0xFFC2E9D7)),
+              )
+            : _errorMessage != null
                 ? Center(child: Text(_errorMessage!))
                 : _buildSetoranContent(),
       ),
@@ -789,14 +378,83 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
   Widget _buildSetoranContent() {
     final data = _setoranResponse?.data;
     final setoran = data?.setoran;
-    final List<Widget> carouselItems =
-        [
-          _buildProgressCard(0, 'KP'),
-          _buildProgressCard(1, 'SEMINAR KP'),
-          _buildProgressCard(2, 'DAFTAR TA'),
-          _buildProgressCard(3, 'SEMPRO'),
-          _buildProgressCard(4, 'SIDANG TA'),
-        ].where((card) => card is! SizedBox).toList();
+    final List<Widget> carouselItems = [
+      if (setoran?.ringkasan != null && setoran!.ringkasan!.isNotEmpty)
+        ProgressCard(
+          ringkasan: setoran.ringkasan![0],
+          title: 'KERJA PRAKTEK',
+          onTap: () => showModalBottomSheet(
+            context: context,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+            ),
+            builder: (context) => ProgressBottomSheet(
+              ringkasan: setoran.ringkasan![0],
+              title: 'KERJA PRAKTEK',
+            ),
+          ),
+        ),
+      if (setoran?.ringkasan != null && setoran!.ringkasan!.length > 1)
+        ProgressCard(
+          ringkasan: setoran.ringkasan![1],
+          title: 'SEMINAR KP',
+          onTap: () => showModalBottomSheet(
+            context: context,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+            ),
+            builder: (context) => ProgressBottomSheet(
+              ringkasan: setoran.ringkasan![1],
+              title: 'SEMINAR KP',
+            ),
+          ),
+        ),
+      if (setoran?.ringkasan != null && setoran!.ringkasan!.length > 2)
+        ProgressCard(
+          ringkasan: setoran.ringkasan![2],
+          title: 'DAFTAR TA',
+          onTap: () => showModalBottomSheet(
+            context: context,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+            ),
+            builder: (context) => ProgressBottomSheet(
+              ringkasan: setoran.ringkasan![2],
+              title: 'DAFTAR TA',
+            ),
+          ),
+        ),
+      if (setoran?.ringkasan != null && setoran!.ringkasan!.length > 3)
+        ProgressCard(
+          ringkasan: setoran.ringkasan![3],
+          title: 'SEMPRO',
+          onTap: () => showModalBottomSheet(
+            context: context,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+            ),
+            builder: (context) => ProgressBottomSheet(
+              ringkasan: setoran.ringkasan![3],
+              title: 'SEMPRO',
+            ),
+          ),
+        ),
+      if (setoran?.ringkasan != null && setoran!.ringkasan!.length > 4)
+        ProgressCard(
+          ringkasan: setoran.ringkasan![4],
+          title: 'SIDANG TA',
+          onTap: () => showModalBottomSheet(
+            context: context,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+            ),
+            builder: (context) => ProgressBottomSheet(
+              ringkasan: setoran.ringkasan![4],
+              title: 'SIDANG TA',
+            ),
+          ),
+        ),
+    ].where((card) => card is! SizedBox).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -825,24 +483,22 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children:
-                  carouselItems.asMap().entries.map((entry) {
-                    return GestureDetector(
-                      onTap: () => _carouselController.animateToPage(entry.key),
-                      child: Container(
-                        width: _currentPage == entry.key ? 8.0 : 6.0,
-                        height: _currentPage == entry.key ? 8.0 : 6.0,
-                        margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color:
-                              _currentPage == entry.key
-                                  ? const Color(0xFF4A4A4A)
-                                  : Colors.grey.withOpacity(0.4),
-                        ),
-                      ),
-                    );
-                  }).toList(),
+              children: carouselItems.asMap().entries.map((entry) {
+                return GestureDetector(
+                  onTap: () => _carouselController.animateToPage(entry.key),
+                  child: Container(
+                    width: _currentPage == entry.key ? 8.0 : 6.0,
+                    height: _currentPage == entry.key ? 8.0 : 6.0,
+                    margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _currentPage == entry.key
+                          ? const Color(0xFF4A4A4A)
+                          : Colors.grey.withOpacity(0.4),
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
           ],
         ),
@@ -854,41 +510,37 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children:
-                    _filters.map((filter) {
-                      final isSelected = _selectedFilter == filter;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: ChoiceChip(
-                          label: Text(
-                            filter,
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: Colors.black,
-                            ),
-                          ),
-                          selected: isSelected,
-                          selectedColor: Color(0xFFC2E9D7),
-                          backgroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                            side: BorderSide(
-                              color:
-                                  isSelected
-                                      ? Color(0xFF4A4A4A)
-                                      : Color(0xFF888888),
-                            ),
-                          ),
-                          onSelected: (selected) {
-                            if (selected) {
-                              setState(() {
-                                _selectedFilter = filter;
-                              });
-                            }
-                          },
+                children: _filters.map((filter) {
+                  final isSelected = _selectedFilter == filter;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: ChoiceChip(
+                      label: Text(
+                        filter,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: Colors.black,
                         ),
-                      );
-                    }).toList(),
+                      ),
+                      selected: isSelected,
+                      selectedColor: Color(0xFFC2E9D7),
+                      backgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        side: BorderSide(
+                          color: isSelected ? Color(0xFF4A4A4A) : Color(0xFF888888),
+                        ),
+                      ),
+                      onSelected: (selected) {
+                        if (selected) {
+                          setState(() {
+                            _selectedFilter = filter;
+                          });
+                        }
+                      },
+                    ),
+                  );
+                }).toList(),
               ),
             ),
           ),
@@ -904,102 +556,88 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
                 border: Border.all(color: const Color(0xFF4A4A4A), width: 1),
               ),
               child: ListView(
-                children:
-                    _getFilteredDetails().asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final detail = entry.value;
-                      final isDisabled =
-                          _isMultiSelectMode &&
-                          ((_multiSelectType == 'validate' &&
-                                  detail.sudahSetor == true) ||
-                              (_multiSelectType == 'cancel' &&
-                                  detail.sudahSetor != true));
-                      return Card(
-                        color: Colors.transparent,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                children: _getFilteredDetails().asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final detail = entry.value;
+                  final isDisabled = _isMultiSelectMode &&
+                      ((_multiSelectType == 'validate' && detail.sudahSetor == true) ||
+                          (_multiSelectType == 'cancel' && detail.sudahSetor != true));
+                  return Card(
+                    color: Colors.transparent,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ListTile(
+                      title: Text(
+                        detail.nama ?? '-',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
                         ),
-                        child: ListTile(
-                          title: Text(
-                            detail.nama ?? '-',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
+                      ),
+                      subtitle: FittedBox(
+                        alignment: Alignment.centerLeft,
+                        fit: BoxFit.scaleDown,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.rectangle,
+                            color: detail.sudahSetor != false
+                                ? Colors.green.withOpacity(0.1)
+                                : Colors.red.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          subtitle: FittedBox(
-                            alignment: Alignment.centerLeft,
-                            fit: BoxFit.scaleDown,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.rectangle,
-                                color:
-                                    detail.sudahSetor != false
-                                        ? Colors.green.withOpacity(0.1)
-                                        : Colors.red.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8.0,
-                                  vertical: 4.0,
-                                ),
-                                child: Text(
-                                  detail.sudahSetor != false
-                                      ? 'Sudah'
-                                      : 'Belum',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 12,
-                                    color: Colors.black.withOpacity(0.5),
-                                  ),
-                                ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8.0,
+                              vertical: 4.0,
+                            ),
+                            child: Text(
+                              detail.sudahSetor != false ? 'Sudah' : 'Belum',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: Colors.black.withOpacity(0.5),
                               ),
                             ),
                           ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  Icons.description,
-                                  color: const Color(
-                                    0xFF000000,
-                                  ).withOpacity(0.5),
-                                ),
-                                onPressed: () => _showDetailBottomSheet(detail),
-                              ),
-                              _isMultiSelectMode
-                                  ? Checkbox(
-                                    value: _selectedIndices.contains(index),
-                                    onChanged:
-                                        isDisabled
-                                            ? null
-                                            : (value) => _toggleSetoranStatus(
-                                              detail,
-                                              index,
-                                            ),
-                                    activeColor: const Color(0xFF4A4A4A),
-                                  )
-                                  : IconButton(
-                                    icon: Icon(
-                                      detail.sudahSetor != false
-                                          ? Icons.delete
-                                          : Icons.check,
-                                      color:
-                                          detail.sudahSetor != false
-                                              ? Colors.red
-                                              : Colors.green,
-                                    ),
-                                    onPressed:
-                                        () =>
-                                            _toggleSetoranStatus(detail, index),
-                                  ),
-                            ],
-                          ),
                         ),
-                      );
-                    }).toList(),
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(
+                              Icons.description,
+                              color: const Color(0xFF000000).withOpacity(0.5),
+                            ),
+                            onPressed: () => showModalBottomSheet(
+                              context: context,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+                              ),
+                              builder: (context) => DetailBottomSheet(detail: detail),
+                            ),
+                          ),
+                          _isMultiSelectMode
+                              ? Checkbox(
+                                  value: _selectedIndices.contains(index),
+                                  onChanged: isDisabled
+                                      ? null
+                                      : (value) => _toggleSetoranStatus(detail, index),
+                                  activeColor: const Color(0xFF4A4A4A),
+                                )
+                              : IconButton(
+                                  icon: Icon(
+                                    detail.sudahSetor != false ? Icons.delete : Icons.check,
+                                    color: detail.sudahSetor != false ? Colors.red : Colors.green,
+                                  ),
+                                  onPressed: () => _toggleSetoranStatus(detail, index),
+                                ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
             ),
           ),

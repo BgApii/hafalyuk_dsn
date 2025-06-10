@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class InfoItem extends StatelessWidget {
   final IconData icon;
@@ -27,14 +28,14 @@ class InfoItem extends StatelessWidget {
               children: [
                 Text(
                   '$label:',
-                  style: const TextStyle(
+                  style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
                 ),
                 Text(
                   value,
-                  style: const TextStyle(fontSize: 14, color: Colors.black87),
+                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.black),
                 ),
               ],
             ),

@@ -7,18 +7,11 @@ import 'package:hafalyuk_dsn/services/auth_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-  final authService = AuthService();
-  final token = await authService.getToken();
-  Widget initialPage =
-      (token != null) ? const PaPage() : const LoginPage();
-
-  runApp(MyApp(initialPage: initialPage));
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final Widget initialPage;
-
-  const MyApp({super.key, required this.initialPage});
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,19 +19,46 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Setoran Hafalan',
       theme: ThemeData(
-        appBarTheme: AppBarTheme(
+        appBarTheme: const AppBarTheme(
           backgroundColor: Color(0xFFC2E9D7),
           scrolledUnderElevation: 0,
         ),
         scaffoldBackgroundColor: Color(0xFFC2E9D7),
         primarySwatch: Colors.blue,
         textSelectionTheme: TextSelectionThemeData(
-          selectionColor: Colors.blue.shade100,
-          cursorColor: Colors.grey.shade300,
-          selectionHandleColor: Colors.blue.shade300,
+          selectionColor: Colors.blue,
+          cursorColor: Colors.grey,
+          selectionHandleColor: Colors.blue,
         ),
       ),
-      home: initialPage,
+      home: const InitializerWidget(),
+    );
+  }
+}
+
+class InitializerWidget extends StatelessWidget {
+  const InitializerWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String?>(
+      future: AuthService().getToken(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(
+                color: Colors.blueAccent,
+              ),
+            ),
+          );
+        } else if (snapshot.hasError) {
+          return const LoginPage();
+        } else {
+          final token = snapshot.data;
+          return token != null ? const PaPage() : const LoginPage();
+        }
+      },
     );
   }
 }
