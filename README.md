@@ -1,4 +1,4 @@
-# Hafalyuk Dosen
+# HAFALAN MAHASISWA for Dosen
 
 <img src="assets/images/logoApp.png" alt="Hafalyuk Dosen Logo"/>
 
@@ -100,11 +100,11 @@ lib/
 Contoh konfigurasi:
 
 ```
-KC_URL=https://keycloak.example.com
-CLIENT_ID=your_client_id
-CLIENT_SECRET=your_client_secret
-URL_API=https://api.example.com
-BASE_URL=/api/v1
+URL_API=<API_URL>
+BASE_URL=<BASE_URL>
+KC_URL=<KEYCLOAK_URL>
+CLIENT_ID=<KEYCLOAK_CLIENT_ID>
+CLIENT_SECRET=<KEYCLOAK_CLIENT_SECRET>
 ```
 
 ### Ikon dan Font
@@ -125,7 +125,7 @@ BASE_URL=/api/v1
 
 ```bash
 # Kloning repositori
-git clone <repository_url>
+git clone https://github.com/BgApii/hafalyuk_dsn.git
 cd hafalyuk_dsn
 
 # Instal dependensi
@@ -141,10 +141,10 @@ flutter run
 ## Screenshot
 
 <p align="center">
-  <img src="screenshots/login.png" width="200" style="margin: 10px;"/>
-  <img src="screenshots/mahasiswa.png" width="200" style="margin: 10px;"/>
-  <img src="screenshots/setoran.png" width="200" style="margin: 10px;"/>
-  <img src="screenshots/profile.png" width="200" style="margin: 10px;"/>
+  <img src="assets/images/screenshots_login.png" width="200" style="margin: 10px;"/>
+  <img src="assets/images/screenshots_mahasiswa.png" width="200" style="margin: 10px;"/>
+  <img src="assets/images/screenshots_setoran.png" width="200" style="margin: 10px;"/>
+  <img src="assets/images/screenshots_profile.png" width="200" style="margin: 10px;"/>
 </p>
 
 ---
