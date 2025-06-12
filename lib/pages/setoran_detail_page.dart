@@ -102,21 +102,22 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
     });
 
     try {
+      final setoranItem = {
+        'id': detail.infoSetoran?.id ?? '',
+        'id_komponen_setoran': detail.id ?? '',
+        'nama_komponen_setoran': detail.nama ?? '',
+      };
+
       if (detail.sudahSetor == true) {
-        await _paService.markAsBelumSetor(
-          widget.nim,
-          detail.infoSetoran?.id ?? '',
-          detail.id ?? '',
-          detail.nama ?? '',
-        );
+        await _paService.markAsBelumSetor(widget.nim, [setoranItem]);
       } else {
-        await _paService.markAsSudahSetor(
-          widget.nim,
-          detail.id ?? '',
-          detail.nama ?? '',
-        );
+        await _paService.markAsSudahSetor(widget.nim, [
+          {
+            'id_komponen_setoran': detail.id ?? '',
+            'nama_komponen_setoran': detail.nama ?? '',
+          }
+        ]);
       }
-      await _fetchSetoranData();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -135,18 +136,21 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
           _errorMessage = e.toString();
           _isLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Error: $e',
-              style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
+        if (_errorMessage!.toLowerCase().contains('connection error')) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Tidak ada koneksi internet',
+                style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
+              ),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
             ),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
-        );
+          );
+        }
       }
     }
+    _fetchSetoranData();
   }
 
   Future<void> _toggleSetoranStatus(Detail detail, int index) async {
@@ -186,24 +190,36 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
 
     try {
       final details = _getFilteredDetails();
-      for (int index in _selectedIndices) {
+      final setoranItems = _selectedIndices.map((index) {
         final detail = details[index];
-        if (_multiSelectType == 'validate' && detail.sudahSetor != true) {
-          await _paService.markAsSudahSetor(
-            widget.nim,
-            detail.id ?? '',
-            detail.nama ?? '',
-          );
-        } else if (_multiSelectType == 'cancel' && detail.sudahSetor == true) {
-          await _paService.markAsBelumSetor(
-            widget.nim,
-            detail.infoSetoran?.id ?? '',
-            detail.id ?? '',
-            detail.nama ?? '',
-          );
-        }
+        return {
+          'id': detail.infoSetoran?.id ?? '',
+          'id_komponen_setoran': detail.id ?? '',
+          'nama_komponen_setoran': detail.nama ?? '',
+        };
+      }).toList();
+
+      if (_multiSelectType == 'validate') {
+        await _paService.markAsSudahSetor(
+          widget.nim,
+          setoranItems.map((item) => {
+                'id_komponen_setoran': item['id_komponen_setoran'] ?? '',
+                'nama_komponen_setoran': item['nama_komponen_setoran'] ?? '',
+              }).toList(),
+        );
+      } else if (_multiSelectType == 'cancel') {
+        await _paService.markAsBelumSetor(
+          widget.nim,
+          setoranItems
+              .map((item) => {
+                    'id': item['id'] ?? '',
+                    'id_komponen_setoran': item['id_komponen_setoran'] ?? '',
+                    'nama_komponen_setoran': item['nama_komponen_setoran'] ?? '',
+                  })
+              .toList(),
+        );
       }
-      await _fetchSetoranData();
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -222,18 +238,21 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
           _errorMessage = e.toString();
           _isLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Error: $e',
-              style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
+        if (_errorMessage!.toLowerCase().contains('connection error')) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Tidak ada koneksi internet',
+                style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
+              ),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
             ),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
-        );
+          );
+        }
       }
     }
+    _fetchSetoranData();
   }
 
   Future<void> _saveMultiSelectChanges() async {
@@ -303,7 +322,9 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
               ),
-              builder: (context) => StudentInfoBottomSheet(info: _setoranResponse?.data?.info),
+              builder: (context) => StudentInfoBottomSheet(
+                info: _setoranResponse?.data?.info,
+              ),
             );
           },
         ),
@@ -354,7 +375,8 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
       floatingActionButton: _isMultiSelectMode
           ? FloatingActionButton(
               onPressed: _saveMultiSelectChanges,
-              backgroundColor: _multiSelectType == 'validate' ? Colors.green : Colors.red,
+              backgroundColor:
+                  _multiSelectType == 'validate' ? Colors.green : Colors.red,
               child: const Icon(Icons.save, color: Colors.white),
             )
           : null,
@@ -368,9 +390,35 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
             ? const Center(
                 child: CircularProgressIndicator(color: Color(0xFFC2E9D7)),
               )
-            : _errorMessage != null
-                ? Center(child: Text(_errorMessage!))
-                : _buildSetoranContent(),
+            : _errorMessage != null &&
+                    _errorMessage!.toLowerCase().contains('connection error')
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Tidak ada koneksi internet, harap periksa koneksi internet anda',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            color: Color(0xFF4A4A4A),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.refresh,
+                            color: Color(0xFF4A4A4A),
+                            size: 30,
+                          ),
+                          onPressed: _fetchSetoranData,
+                        ),
+                      ],
+                    ),
+                  )
+                : _errorMessage != null
+                    ? Center(child: Text(_errorMessage!))
+                    : _buildSetoranContent(),
       ),
     );
   }
@@ -386,7 +434,9 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
           onTap: () => showModalBottomSheet(
             context: context,
             shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(25),
+              ),
             ),
             builder: (context) => ProgressBottomSheet(
               ringkasan: setoran.ringkasan![0],
@@ -401,7 +451,9 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
           onTap: () => showModalBottomSheet(
             context: context,
             shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(25),
+              ),
             ),
             builder: (context) => ProgressBottomSheet(
               ringkasan: setoran.ringkasan![1],
@@ -416,7 +468,9 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
           onTap: () => showModalBottomSheet(
             context: context,
             shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(25),
+              ),
             ),
             builder: (context) => ProgressBottomSheet(
               ringkasan: setoran.ringkasan![2],
@@ -431,7 +485,9 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
           onTap: () => showModalBottomSheet(
             context: context,
             shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(25),
+              ),
             ),
             builder: (context) => ProgressBottomSheet(
               ringkasan: setoran.ringkasan![3],
@@ -446,7 +502,9 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
           onTap: () => showModalBottomSheet(
             context: context,
             shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(25),
+              ),
             ),
             builder: (context) => ProgressBottomSheet(
               ringkasan: setoran.ringkasan![4],
@@ -613,7 +671,9 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
                             onPressed: () => showModalBottomSheet(
                               context: context,
                               shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+                                borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(25),
+                                ),
                               ),
                               builder: (context) => DetailBottomSheet(detail: detail),
                             ),

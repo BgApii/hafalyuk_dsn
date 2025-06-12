@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hafalyuk_dsn/models/pa_model.dart';
 import 'package:hafalyuk_dsn/pages/dosen_profile_page.dart';
+import 'package:hafalyuk_dsn/pages/login_page.dart';
 import 'package:hafalyuk_dsn/services/auth_service.dart';
 import 'package:hafalyuk_dsn/services/pa_service.dart';
 import 'package:hafalyuk_dsn/pages/mahasiswa_page.dart';
@@ -58,6 +59,24 @@ class _PaPageState extends State<PaPage> with SingleTickerProviderStateMixin {
         _errorMessage = e.toString();
         _isLoading = false;
       });
+
+      if (_errorMessage!.contains('Session expired')) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const LoginPage(),
+            ),
+          );
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Sesi Anda telah berakhir. Silakan login kembali.',
+              ),
+            ),
+          );
+        });
+      }
     }
   }
 
@@ -124,25 +143,49 @@ class _PaPageState extends State<PaPage> with SingleTickerProviderStateMixin {
           borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
           color: Color(0xFFFFF8E7),
         ),
-        child:
-            _isLoading
-                ? const Center(
-                  child: CircularProgressIndicator(color: Color(0xFFC2E9D7)),
-                )
-                : _errorMessage != null
-                ? Center(child: Text(_errorMessage!))
-                : TabBarView(
-                  controller: _tabController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    MahasiswaPage(
-                      daftarMahasiswa:
-                          _paResponse?.data?.infoMahasiswaPa?.daftarMahasiswa ??
-                          [],
+        child: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(color: Color(0xFFC2E9D7)),
+              )
+            : _errorMessage != null && _errorMessage!.toLowerCase().contains('connection error')
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Tidak ada koneksi internet, harap periksa koneksi internet anda',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            color: Color(0xFF4A4A4A),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        IconButton(
+                          icon: const Icon(Icons.refresh, color: Color(0xFF4A4A4A), size: 30),
+                          onPressed: _fetchPaData,
+                        ),
+                      ],
                     ),
-                    DosenProfilePage(data: _paResponse?.data),
-                  ],
-                ),
+                  )
+                : _errorMessage != null && _errorMessage!.contains('Session expired')
+                    ? const Center(
+                        child: Text('Mengalihkan ke halaman login...'),
+                      )
+                    : _errorMessage != null
+                        ? Center(child: Text(_errorMessage!))
+                        : TabBarView(
+                            controller: _tabController,
+                            physics: const NeverScrollableScrollPhysics(),
+                            children: [
+                              MahasiswaPage(
+                                daftarMahasiswa: _paResponse
+                                        ?.data?.infoMahasiswaPa?.daftarMahasiswa ??
+                                    [],
+                              ),
+                              DosenProfilePage(data: _paResponse?.data),
+                            ],
+                          ),
       ),
     );
   }

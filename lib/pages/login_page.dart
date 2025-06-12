@@ -21,7 +21,7 @@ class _LoginPageState extends State<LoginPage> {
     try {
       await _authService.login(
         _usernameController.text,
-        _passwordController.text,
+        _passwordController.text, isDosenApp: true,
       );
       Navigator.pushReplacement(
         context,
@@ -47,6 +47,7 @@ class _LoginPageState extends State<LoginPage> {
     } catch (e) {
       setState(() {
         _errorMessage = e.toString();
+        print('Login error: $_errorMessage');
       });
     }
   }
@@ -203,7 +204,11 @@ class _LoginPageState extends State<LoginPage> {
                         Padding(
                           padding: const EdgeInsets.only(top: 16),
                           child: Text(
-                            'Wrong username or password!',
+                            _errorMessage!.contains('connection error')
+                                ? 'Tidak ada koneksi internet!'
+                                : _errorMessage!.contains('Ini aplikasi untuk dosen')
+                                    ? 'Ini aplikasi untuk dosen'
+                                    : 'Salah username atau password!',
                             style: TextStyle(color: Colors.red, fontSize: 14),
                           ),
                         ),

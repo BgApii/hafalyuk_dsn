@@ -1,5 +1,3 @@
-
-
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hafalyuk_dsn/models/pa_model.dart';
@@ -54,7 +52,7 @@ class PaService {
     }
   }
 
-  Future<void> markAsSudahSetor(String nim, String idKomponen, String namaKomponen) async {
+  Future<void> markAsSudahSetor(String nim, List<Map<String, String>> setoranItems) async {
     try {
       final token = await _authService.getToken();
       if (token == null) throw Exception('No access token found');
@@ -62,12 +60,10 @@ class PaService {
       await dio.post(
         '$apiUrl$baseUrl/mahasiswa/setoran/$nim',
         data: {
-          "data_setoran": [
-            {
-              "nama_komponen_setoran": namaKomponen,
-              "id_komponen_setoran": idKomponen,
-            }
-          ]
+          "data_setoran": setoranItems.map((item) => {
+                "nama_komponen_setoran": item['nama_komponen_setoran'],
+                "id_komponen_setoran": item['id_komponen_setoran'],
+              }).toList(),
         },
         options: Options(
           headers: {
@@ -81,7 +77,7 @@ class PaService {
     }
   }
 
-  Future<void> markAsBelumSetor(String nim, String idSetoran, String idKomponen, String namaKomponen) async {
+  Future<void> markAsBelumSetor(String nim, List<Map<String, String>> setoranItems) async {
     try {
       final token = await _authService.getToken();
       if (token == null) throw Exception('No access token found');
@@ -89,13 +85,11 @@ class PaService {
       await dio.delete(
         '$apiUrl$baseUrl/mahasiswa/setoran/$nim',
         data: {
-          "data_setoran": [
-            {
-              "id": idSetoran,
-              "id_komponen_setoran": idKomponen,
-              "nama_komponen_setoran": namaKomponen,
-            }
-          ]
+          "data_setoran": setoranItems.map((item) => {
+                "id": item['id'],
+                "id_komponen_setoran": item['id_komponen_setoran'],
+                "nama_komponen_setoran": item['nama_komponen_setoran'],
+              }).toList(),
         },
         options: Options(
           headers: {

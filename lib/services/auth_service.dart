@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hafalyuk_dsn/models/login_model.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 class AuthService {
   static final AuthService _instance = AuthService._internal();
@@ -56,7 +57,7 @@ class AuthService {
     );
   }
 
-  Future<LoginRespons> login(String username, String password) async {
+  Future<LoginRespons> login(String username, String password, {required bool isDosenApp}) async {
     final response = await dio.post(
       '$kcUrl/realms/dev/protocol/openid-connect/token',
       data: {
@@ -81,6 +82,22 @@ class AuthService {
         key: 'refresh_token',
         value: loginResponse.refreshToken,
       );
+
+      // Decode JWT untuk memeriksa roles
+      if (loginResponse.accessToken == null) {
+        throw Exception('Access token is null');
+      }
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(loginResponse.accessToken!);
+      List<dynamic> roles = decodedToken['realm_access']['roles'];
+
+      // Validasi peran berdasarkan aplikasi
+      if (isDosenApp && !roles.contains('dosen')) {
+        await logout();
+        throw Exception('Ini aplikasi untuk dosen');
+      } else if (!isDosenApp && !roles.contains('mahasiswa')) {
+        await logout();
+        throw Exception('Ini aplikasi untuk mahasiswa');
+      }
 
       dio.options.headers['Authorization'] =
           'Bearer ${loginResponse.accessToken}';
