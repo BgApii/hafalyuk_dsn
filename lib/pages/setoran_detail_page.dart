@@ -27,7 +27,8 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
   SetoranRespons? _setoranResponse;
   bool _isLoading = true;
   String? _errorMessage;
-  final CarouselSliderController _carouselController = CarouselSliderController();
+  final CarouselSliderController _carouselController =
+      CarouselSliderController();
   int _currentPage = 0;
   String _selectedFilter = 'Semua';
   final List<String> _filters = ['Semua', 'Sudah Setor', 'Belum Setor'];
@@ -115,7 +116,7 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
           {
             'id_komponen_setoran': detail.id ?? '',
             'nama_komponen_setoran': detail.nama ?? '',
-          }
+          },
         ]);
       }
       if (mounted) {
@@ -190,32 +191,39 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
 
     try {
       final details = _getFilteredDetails();
-      final setoranItems = _selectedIndices.map((index) {
-        final detail = details[index];
-        return {
-          'id': detail.infoSetoran?.id ?? '',
-          'id_komponen_setoran': detail.id ?? '',
-          'nama_komponen_setoran': detail.nama ?? '',
-        };
-      }).toList();
+      final setoranItems =
+          _selectedIndices.map((index) {
+            final detail = details[index];
+            return {
+              'id': detail.infoSetoran?.id ?? '',
+              'id_komponen_setoran': detail.id ?? '',
+              'nama_komponen_setoran': detail.nama ?? '',
+            };
+          }).toList();
 
       if (_multiSelectType == 'validate') {
         await _paService.markAsSudahSetor(
           widget.nim,
-          setoranItems.map((item) => {
-                'id_komponen_setoran': item['id_komponen_setoran'] ?? '',
-                'nama_komponen_setoran': item['nama_komponen_setoran'] ?? '',
-              }).toList(),
+          setoranItems
+              .map(
+                (item) => {
+                  'id_komponen_setoran': item['id_komponen_setoran'] ?? '',
+                  'nama_komponen_setoran': item['nama_komponen_setoran'] ?? '',
+                },
+              )
+              .toList(),
         );
       } else if (_multiSelectType == 'cancel') {
         await _paService.markAsBelumSetor(
           widget.nim,
           setoranItems
-              .map((item) => {
-                    'id': item['id'] ?? '',
-                    'id_komponen_setoran': item['id_komponen_setoran'] ?? '',
-                    'nama_komponen_setoran': item['nama_komponen_setoran'] ?? '',
-                  })
+              .map(
+                (item) => {
+                  'id': item['id'] ?? '',
+                  'id_komponen_setoran': item['id_komponen_setoran'] ?? '',
+                  'nama_komponen_setoran': item['nama_komponen_setoran'] ?? '',
+                },
+              )
               .toList(),
         );
       }
@@ -305,94 +313,103 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
     final studentName = _setoranResponse?.data?.info?.nama ?? '';
     final firstTwoWords = studentName.split(' ').take(2).join(' ');
 
-    return Scaffold(
-      appBar: AppBar(
-        title: TextButton(
-          child: Text(
-            firstTwoWords,
-            style: GoogleFonts.poppins(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Colors.black,
+    return SafeArea(
+      top: false,
+      child: Scaffold(
+        appBar: AppBar(
+          title: TextButton(
+            child: Text(
+              firstTwoWords,
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.black,
+              ),
             ),
-          ),
-          onPressed: () {
-            showModalBottomSheet(
-              context: context,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-              ),
-              builder: (context) => StudentInfoBottomSheet(
-                info: _setoranResponse?.data?.info,
-              ),
-            );
-          },
-        ),
-        centerTitle: true,
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              setState(() {
-                if (_multiSelectType == value) {
-                  _enterMultiSelectMode(null);
-                } else {
-                  _enterMultiSelectMode(value);
-                }
-              });
+            onPressed: () {
+              showModalBottomSheet(
+                backgroundColor: Colors.white,
+                context: context,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+                ),
+                builder:
+                    (context) => StudentInfoBottomSheet(
+                      info: _setoranResponse?.data?.info,
+                    ),
+              );
             },
-            color: Colors.white,
-            itemBuilder: (BuildContext context) => [
-              PopupMenuItem(
-                value: 'validate',
-                child: Row(
-                  children: [
-                    Checkbox(
-                      value: _multiSelectType == 'validate',
-                      onChanged: (_) {},
-                      activeColor: const Color(0xFF4A4A4A),
-                    ),
-                    const Text('Pilih Banyak Validasi'),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'cancel',
-                child: Row(
-                  children: [
-                    Checkbox(
-                      value: _multiSelectType == 'cancel',
-                      onChanged: (_) {},
-                      activeColor: const Color(0xFF4A4A4A),
-                    ),
-                    const Text('Pilih Banyak Batalkan'),
-                  ],
-                ),
-              ),
-            ],
           ),
-        ],
-      ),
-      floatingActionButton: _isMultiSelectMode
-          ? FloatingActionButton(
-              onPressed: _saveMultiSelectChanges,
-              backgroundColor:
-                  _multiSelectType == 'validate' ? Colors.green : Colors.red,
-              child: const Icon(Icons.save, color: Colors.white),
-            )
-          : null,
-      body: Container(
-        decoration: const BoxDecoration(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-          color: Color(0xFFFFF8E7),
+          centerTitle: true,
+          actions: [
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                setState(() {
+                  if (_multiSelectType == value) {
+                    _enterMultiSelectMode(null);
+                  } else {
+                    _enterMultiSelectMode(value);
+                  }
+                });
+              },
+              color: Colors.white,
+              itemBuilder:
+                  (BuildContext context) => [
+                    PopupMenuItem(
+                      value: 'validate',
+                      child: Row(
+                        children: [
+                          Checkbox(
+                            value: _multiSelectType == 'validate',
+                            onChanged: (_) {},
+                            activeColor: const Color(0xFF4A4A4A),
+                          ),
+                          const Text('Pilih Banyak Validasi'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'cancel',
+                      child: Row(
+                        children: [
+                          Checkbox(
+                            value: _multiSelectType == 'cancel',
+                            onChanged: (_) {},
+                            activeColor: const Color(0xFF4A4A4A),
+                          ),
+                          const Text('Pilih Banyak Batalkan'),
+                        ],
+                      ),
+                    ),
+                  ],
+            ),
+          ],
         ),
-        height: double.infinity,
-        child: _isLoading
-            ? const Center(
-                child: CircularProgressIndicator(color: Color(0xFFC2E9D7)),
-              )
-            : _errorMessage != null &&
-                    _errorMessage!.toLowerCase().contains('connection error')
-                ? Center(
+        floatingActionButton:
+            _isMultiSelectMode
+                ? FloatingActionButton(
+                  onPressed: _saveMultiSelectChanges,
+                  backgroundColor:
+                      _multiSelectType == 'validate'
+                          ? Colors.green
+                          : Colors.red,
+                  child: const Icon(Icons.save, color: Colors.white),
+                )
+                : null,
+        body: Container(
+          decoration: const BoxDecoration(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+            color: Color(0xFFFFF8E7),
+          ),
+          height: double.infinity,
+          child:
+              _isLoading
+                  ? const Center(
+                    child: CircularProgressIndicator(color: Color(0xFFC2E9D7)),
+                  )
+                  : _errorMessage != null &&
+                      _errorMessage!.toLowerCase().contains('connection error')
+                  ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -416,9 +433,10 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
                       ],
                     ),
                   )
-                : _errorMessage != null
-                    ? Center(child: Text(_errorMessage!))
-                    : _buildSetoranContent(),
+                  : _errorMessage != null
+                  ? Center(child: Text(_errorMessage!))
+                  : _buildSetoranContent(),
+        ),
       ),
     );
   }
@@ -426,93 +444,109 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
   Widget _buildSetoranContent() {
     final data = _setoranResponse?.data;
     final setoran = data?.setoran;
-    final List<Widget> carouselItems = [
-      if (setoran?.ringkasan != null && setoran!.ringkasan!.isNotEmpty)
-        ProgressCard(
-          ringkasan: setoran.ringkasan![0],
-          title: 'KERJA PRAKTEK',
-          onTap: () => showModalBottomSheet(
-            context: context,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(25),
-              ),
-            ),
-            builder: (context) => ProgressBottomSheet(
+    final List<Widget> carouselItems =
+        [
+          if (setoran?.ringkasan != null && setoran!.ringkasan!.isNotEmpty)
+            ProgressCard(
               ringkasan: setoran.ringkasan![0],
               title: 'KERJA PRAKTEK',
+              onTap:
+                  () => showModalBottomSheet(
+                    backgroundColor: Colors.white,
+                    context: context,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(25),
+                      ),
+                    ),
+                    builder:
+                        (context) => ProgressBottomSheet(
+                          ringkasan: setoran.ringkasan![0],
+                          title: 'KERJA PRAKTEK',
+                        ),
+                  ),
             ),
-          ),
-        ),
-      if (setoran?.ringkasan != null && setoran!.ringkasan!.length > 1)
-        ProgressCard(
-          ringkasan: setoran.ringkasan![1],
-          title: 'SEMINAR KP',
-          onTap: () => showModalBottomSheet(
-            context: context,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(25),
-              ),
-            ),
-            builder: (context) => ProgressBottomSheet(
+          if (setoran?.ringkasan != null && setoran!.ringkasan!.length > 1)
+            ProgressCard(
               ringkasan: setoran.ringkasan![1],
               title: 'SEMINAR KP',
+              onTap:
+                  () => showModalBottomSheet(
+                    backgroundColor: Colors.white,
+                    context: context,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(25),
+                      ),
+                    ),
+                    builder:
+                        (context) => ProgressBottomSheet(
+                          ringkasan: setoran.ringkasan![1],
+                          title: 'SEMINAR KP',
+                        ),
+                  ),
             ),
-          ),
-        ),
-      if (setoran?.ringkasan != null && setoran!.ringkasan!.length > 2)
-        ProgressCard(
-          ringkasan: setoran.ringkasan![2],
-          title: 'DAFTAR TA',
-          onTap: () => showModalBottomSheet(
-            context: context,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(25),
-              ),
-            ),
-            builder: (context) => ProgressBottomSheet(
+          if (setoran?.ringkasan != null && setoran!.ringkasan!.length > 2)
+            ProgressCard(
               ringkasan: setoran.ringkasan![2],
               title: 'DAFTAR TA',
+              onTap:
+                  () => showModalBottomSheet(
+                    backgroundColor: Colors.white,
+                    context: context,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(25),
+                      ),
+                    ),
+                    builder:
+                        (context) => ProgressBottomSheet(
+                          ringkasan: setoran.ringkasan![2],
+                          title: 'DAFTAR TA',
+                        ),
+                  ),
             ),
-          ),
-        ),
-      if (setoran?.ringkasan != null && setoran!.ringkasan!.length > 3)
-        ProgressCard(
-          ringkasan: setoran.ringkasan![3],
-          title: 'SEMPRO',
-          onTap: () => showModalBottomSheet(
-            context: context,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(25),
-              ),
-            ),
-            builder: (context) => ProgressBottomSheet(
+          if (setoran?.ringkasan != null && setoran!.ringkasan!.length > 3)
+            ProgressCard(
               ringkasan: setoran.ringkasan![3],
               title: 'SEMPRO',
+              onTap:
+                  () => showModalBottomSheet(
+                    backgroundColor: Colors.white,
+                    context: context,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(25),
+                      ),
+                    ),
+                    builder:
+                        (context) => ProgressBottomSheet(
+                          ringkasan: setoran.ringkasan![3],
+                          title: 'SEMPRO',
+                        ),
+                  ),
             ),
-          ),
-        ),
-      if (setoran?.ringkasan != null && setoran!.ringkasan!.length > 4)
-        ProgressCard(
-          ringkasan: setoran.ringkasan![4],
-          title: 'SIDANG TA',
-          onTap: () => showModalBottomSheet(
-            context: context,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(25),
-              ),
-            ),
-            builder: (context) => ProgressBottomSheet(
+          if (setoran?.ringkasan != null && setoran!.ringkasan!.length > 4)
+            ProgressCard(
               ringkasan: setoran.ringkasan![4],
               title: 'SIDANG TA',
+              onTap:
+                  () => showModalBottomSheet(
+                    backgroundColor: Colors.white,
+                    context: context,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(25),
+                      ),
+                    ),
+                    builder:
+                        (context) => ProgressBottomSheet(
+                          ringkasan: setoran.ringkasan![4],
+                          title: 'SIDANG TA',
+                        ),
+                  ),
             ),
-          ),
-        ),
-    ].where((card) => card is! SizedBox).toList();
+        ].where((card) => card is! SizedBox).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -541,22 +575,24 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: carouselItems.asMap().entries.map((entry) {
-                return GestureDetector(
-                  onTap: () => _carouselController.animateToPage(entry.key),
-                  child: Container(
-                    width: _currentPage == entry.key ? 8.0 : 6.0,
-                    height: _currentPage == entry.key ? 8.0 : 6.0,
-                    margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: _currentPage == entry.key
-                          ? const Color(0xFF4A4A4A)
-                          : Colors.grey.withOpacity(0.4),
-                    ),
-                  ),
-                );
-              }).toList(),
+              children:
+                  carouselItems.asMap().entries.map((entry) {
+                    return GestureDetector(
+                      onTap: () => _carouselController.animateToPage(entry.key),
+                      child: Container(
+                        width: _currentPage == entry.key ? 8.0 : 6.0,
+                        height: _currentPage == entry.key ? 8.0 : 6.0,
+                        margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color:
+                              _currentPage == entry.key
+                                  ? const Color(0xFF4A4A4A)
+                                  : Colors.grey.withOpacity(0.4),
+                        ),
+                      ),
+                    );
+                  }).toList(),
             ),
           ],
         ),
@@ -568,37 +604,41 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: _filters.map((filter) {
-                  final isSelected = _selectedFilter == filter;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: ChoiceChip(
-                      label: Text(
-                        filter,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          color: Colors.black,
+                children:
+                    _filters.map((filter) {
+                      final isSelected = _selectedFilter == filter;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: ChoiceChip(
+                          label: Text(
+                            filter,
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              color: Colors.black,
+                            ),
+                          ),
+                          selected: isSelected,
+                          selectedColor: Color(0xFFC2E9D7),
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            side: BorderSide(
+                              color:
+                                  isSelected
+                                      ? Color(0xFF4A4A4A)
+                                      : Color(0xFF888888),
+                            ),
+                          ),
+                          onSelected: (selected) {
+                            if (selected) {
+                              setState(() {
+                                _selectedFilter = filter;
+                              });
+                            }
+                          },
                         ),
-                      ),
-                      selected: isSelected,
-                      selectedColor: Color(0xFFC2E9D7),
-                      backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        side: BorderSide(
-                          color: isSelected ? Color(0xFF4A4A4A) : Color(0xFF888888),
-                        ),
-                      ),
-                      onSelected: (selected) {
-                        if (selected) {
-                          setState(() {
-                            _selectedFilter = filter;
-                          });
-                        }
-                      },
-                    ),
-                  );
-                }).toList(),
+                      );
+                    }).toList(),
               ),
             ),
           ),
@@ -614,90 +654,114 @@ class _SetoranDetailPageState extends State<SetoranDetailPage> {
                 border: Border.all(color: const Color(0xFF4A4A4A), width: 1),
               ),
               child: ListView(
-                children: _getFilteredDetails().asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final detail = entry.value;
-                  final isDisabled = _isMultiSelectMode &&
-                      ((_multiSelectType == 'validate' && detail.sudahSetor == true) ||
-                          (_multiSelectType == 'cancel' && detail.sudahSetor != true));
-                  return Card(
-                    color: Colors.transparent,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ListTile(
-                      title: Text(
-                        detail.nama ?? '-',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
+                children:
+                    _getFilteredDetails().asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final detail = entry.value;
+                      final isDisabled =
+                          _isMultiSelectMode &&
+                          ((_multiSelectType == 'validate' &&
+                                  detail.sudahSetor == true) ||
+                              (_multiSelectType == 'cancel' &&
+                                  detail.sudahSetor != true));
+                      return Card(
+                        color: Colors.transparent,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      ),
-                      subtitle: FittedBox(
-                        alignment: Alignment.centerLeft,
-                        fit: BoxFit.scaleDown,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.rectangle,
-                            color: detail.sudahSetor != false
-                                ? Colors.green.withOpacity(0.1)
-                                : Colors.red.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8.0,
-                              vertical: 4.0,
+                        child: ListTile(
+                          title: Text(
+                            detail.nama ?? '-',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
                             ),
-                            child: Text(
-                              detail.sudahSetor != false ? 'Sudah' : 'Belum',
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                color: Colors.black.withOpacity(0.5),
+                          ),
+                          subtitle: FittedBox(
+                            alignment: Alignment.centerLeft,
+                            fit: BoxFit.scaleDown,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.rectangle,
+                                color:
+                                    detail.sudahSetor != false
+                                        ? Colors.green.withOpacity(0.1)
+                                        : Colors.red.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(
-                              Icons.description,
-                              color: const Color(0xFF000000).withOpacity(0.5),
-                            ),
-                            onPressed: () => showModalBottomSheet(
-                              context: context,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(25),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8.0,
+                                  vertical: 4.0,
                                 ),
-                              ),
-                              builder: (context) => DetailBottomSheet(detail: detail),
-                            ),
-                          ),
-                          _isMultiSelectMode
-                              ? Checkbox(
-                                  value: _selectedIndices.contains(index),
-                                  onChanged: isDisabled
-                                      ? null
-                                      : (value) => _toggleSetoranStatus(detail, index),
-                                  activeColor: const Color(0xFF4A4A4A),
-                                )
-                              : IconButton(
-                                  icon: Icon(
-                                    detail.sudahSetor != false ? Icons.delete : Icons.check,
-                                    color: detail.sudahSetor != false ? Colors.red : Colors.green,
+                                child: Text(
+                                  detail.sudahSetor != false
+                                      ? 'Sudah'
+                                      : 'Belum',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    color: Colors.black.withOpacity(0.5),
                                   ),
-                                  onPressed: () => _toggleSetoranStatus(detail, index),
                                 ),
-                        ],
-                      ),
-                    ),
-                  );
-                }).toList(),
+                              ),
+                            ),
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  Icons.description,
+                                  color: const Color(
+                                    0xFF000000,
+                                  ).withOpacity(0.5),
+                                ),
+                                onPressed:
+                                    () => showModalBottomSheet(
+                                      backgroundColor: Colors.white,
+                                      context: context,
+                                      shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(25),
+                                        ),
+                                      ),
+                                      builder:
+                                          (context) =>
+                                              DetailBottomSheet(detail: detail),
+                                    ),
+                              ),
+                              _isMultiSelectMode
+                                  ? Checkbox(
+                                    value: _selectedIndices.contains(index),
+                                    onChanged:
+                                        isDisabled
+                                            ? null
+                                            : (value) => _toggleSetoranStatus(
+                                              detail,
+                                              index,
+                                            ),
+                                    activeColor: const Color(0xFF4A4A4A),
+                                  )
+                                  : IconButton(
+                                    icon: Icon(
+                                      detail.sudahSetor != false
+                                          ? Icons.delete
+                                          : Icons.check,
+                                      color:
+                                          detail.sudahSetor != false
+                                              ? Colors.red
+                                              : Colors.green,
+                                    ),
+                                    onPressed:
+                                        () =>
+                                            _toggleSetoranStatus(detail, index),
+                                  ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
               ),
             ),
           ),

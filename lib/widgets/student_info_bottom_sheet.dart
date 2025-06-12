@@ -9,39 +9,37 @@ class StudentInfoBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-          ),
-          InfoItem(
-            icon: Icons.person,
-            label: 'Nama',
-            value: info?.nama ?? '-',
-          ),
-          InfoItem(
-            icon: Icons.badge,
-            label: 'NIM',
-            value: info?.nim ?? '-',
-          ),
-          InfoItem(
-            icon: Icons.calendar_today,
-            label: 'Semester',
-            value: '${info?.semester ?? '-'}',
-          ),
-        ],
+            InfoItem(
+              icon: Icons.person,
+              label: 'Nama',
+              value: info?.nama ?? '-',
+            ),
+            InfoItem(icon: Icons.badge, label: 'NIM', value: info?.nim ?? '-'),
+            InfoItem(
+              icon: Icons.calendar_today,
+              label: 'Semester',
+              value: '${info?.semester ?? '-'}',
+            ),
+          ],
+        ),
       ),
     );
   }
